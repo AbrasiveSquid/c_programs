@@ -4,12 +4,13 @@
 
 /* Copying the features of cat cli program */
 void print_file(FILE *fp);
+void echo_input(void);
 
 int main(int argc, char *argv[]) {
   // needs to get number of arguments if not 2 then reject
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <filepath>\n", argv[0]);
-    exit(EXIT_FAILURE);
+  if (argc == 1) {
+    echo_input();
+    return 0;
   }
 
   FILE *fp = fopen(argv[1], "r");
@@ -41,4 +42,13 @@ void print_file(FILE *fp) {
     fputc(c, stdout);
   }
 
+}
+
+// echos input from stdin to stdout
+void echo_input(void) {
+  int c;
+  while (1) {
+    c = fgetc(stdin);
+    fputc(c, stdout);
+  }
 }
