@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 /* Copying the features of cat cli program */
+void print_file(FILE *fp);
 
 int main(int argc, char *argv[]) {
   // needs to get number of arguments if not 2 then reject
@@ -16,13 +17,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"Cannot open %s\n", argv[1]);
     exit(EXIT_FAILURE);
   }
-
-  int c;
-
-  while (( c = fgetc(fp)) != EOF) {
-    fputc(c, stdout);
-  }
-
+  
+  print_file(fp);
   fclose(fp);
 
 
@@ -31,4 +27,18 @@ int main(int argc, char *argv[]) {
   //
 
   return 0;
+}
+
+// displays the contents of fp to stdout
+void print_file(FILE *fp) {
+  if (fp == NULL) {
+    fprintf(stderr, "Cannot print file\n");
+    return;
+  }
+
+  int c;
+  while (( c = fgetc(fp)) != EOF) {
+    fputc(c, stdout);
+  }
+
 }
