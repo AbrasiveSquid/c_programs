@@ -70,9 +70,21 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
   // char input[4096];
   
   int c;
+  int newline_count = 0;
   bool line_start = true;
   while ((c = fgetc(fp)) != EOF) {
 
+    if (flags->squeeze_blank && c == '\n') {
+      if (newline_count < 2) {
+        newline_count++;
+      } else {
+        while ((c = fgetc(fp)) == '\n') {
+          continue;
+        }
+        ungetc(c, fp);
+        newline_count = 0;
+      }
+    }
     if (line_start){
       if (flags->number_lines) {
         printf("     %d\t", (*line_ptr)++);
@@ -105,6 +117,7 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
       printf("^%c", c+64);
       continue;
     }
+
     fputc(c, stdout);
   }
   
