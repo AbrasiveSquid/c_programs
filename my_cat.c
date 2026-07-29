@@ -76,6 +76,16 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
     if (c == '\n') {
       line_start = true;
     }
+
+    if (flags->show_all && c < 32) {
+      if (c == 10) {
+        printf("$\n");
+      }
+      else {
+        printf("^%c", c + 64);
+      }
+      continue;
+    }
     fputc(c, stdout);
   }
   
