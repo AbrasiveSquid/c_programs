@@ -7,7 +7,11 @@
 // will contain CLI flags
 typedef struct {
   bool number_lines;
-  bool show_all;
+  bool number_nonblank_lines;
+  bool show_ends;
+  bool squeeze_blank;
+  bool show_tabs;
+  bool show_nonprinting;
 } Options;
 
 void print_file(FILE *fp, Options * flag, int * line_ptr);
@@ -77,13 +81,22 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
       line_start = true;
     }
 
-    if (flags->show_all && c < 32) {
+    if (flags->show_ends) {
       if (c == 10) {
         printf("$\n");
-      }
-      else {
+        continue;
+      } else if (c == 13) {
         printf("^%c", c + 64);
+        continue;
       }
+    }
+    if (flags->show_tabs && c == 9) {
+      printf("^%c", c+64);
+      continue;
+    }
+
+    if (flags->show_nonprinting && !(c == 9 || c == 10)) {
+      printf("^%c", c+64);
       continue;
     }
     fputc(c, stdout);
@@ -109,7 +122,12 @@ Options * init_options(void) {
   }
 
   flags->number_lines = false;
-  flags->show_all = false;
+  // flags->show_all = false;
+  flags->number_nonblank_lines = false;
+  flags->show_ends = false;
+  flags -> squeeze_blank = false;
+  flags-> show_tabs = false;
+  flags ->show_nonprinting = false;
   return flags;
   }
 
@@ -123,11 +141,52 @@ int parse_flags(char *argv[], int size, Options *flags) {
         flags->number_lines = true;
         flag_set++;
       }
-      if ((strcmp(argv[i], "-A") == 0) || ((strcmp(argv[i], "--show-all") == 0))) {
-        flags->show_all = true;
+      else if ((strcmp(argv[i], "-A") == 0) || ((strcmp(argv[i], "--show-all") == 0))) {
+        flags->show_ends = true;
+        flags->show_tabs = true;
+        flags->show_nonprinting = true;
         flag_set++;
+      }
+      else if ((strcmp(argv[i], "-b") == 0) || ((strcmp(argv[i], "--number-nonblank") == 0))) {
+        flags->number_nonblank_lines = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-e") == 0))  {
+        flags->show_ends = true;
+        flags->show_nonprinting = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-E") == 0) || ((strcmp(argv[i], "--show-ends") == 0))) {
+        flags->show_ends = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-s") == 0) || ((strcmp(argv[i], "--squeeze-blank") == 0))) {
+        flags->squeeze_blank = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-t") == 0)) {
+        flags->show_tabs = true;
+        flags->show_nonprinting = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-T") == 0) || ((strcmp(argv[i], "--show-tabs") == 0))) {
+        flags->show_tabs = true;
+        flag_set++;
+      }
+      else if ((strcmp(argv[i], "-u") == 0)) {
+        flag_set++; // this flag is ignored and only kept to not trigger perror
+      }
+      else if ((strcmp(argv[i], "-v") == 0) || ((strcmp(argv[i], "--show-nonprinting") == 0))) {
+        flags->show_nonprinting = true;
+        flag_set++;
+      }
+      else {
+        fprintf(stderr, "my_cat: invalid option -- '%c'\n", argv[i][1]);
+        fprintf(stderr, "Try my_cat --help for more information.\n");
+        exit(EXIT_FAILURE);
       }
     }
   }
   return flag_set;
 }
+
