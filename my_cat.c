@@ -13,21 +13,23 @@ typedef struct {
 void print_file(FILE *fp, Options * flag, int * line_ptr);
 FILE * open_file(char *filepath);
 Options * init_options(void);
-void parse_flags(char *argv[], int size, Options *flags); 
+int parse_flags(char *argv[], int size, Options *flags); 
 
 
 int main(int argc, char *argv[]) {
   int exit_status = 0;
   int line = 1; 
   int * line_ptr = &line;
+  int flag_set;
   
   Options * flags = init_options();
   if (flags == NULL) {
     return 1;
   }
-  parse_flags(argv, argc, flags);
-
-  if (argc == 1) {
+  flag_set = parse_flags(argv, argc, flags);
+  
+  // if no arguments or if only flags as arguments
+  if (argc == 1 || (flag_set == (argc - 1))) {
     print_file(stdin, flags, line_ptr);
     return exit_status;
   }
@@ -60,18 +62,20 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
   if (fp == NULL) {
     return;
   }
+
+  char input[4096];
   
-  if (flags->number_lines) {
-    printf("    %d  ", (*line_ptr)++);
-  }
   int c;
-  while (( c = fgetc(fp)) != EOF) {
-    if (c == '\n' && flags->number_lines) {
-        printf("\n    %d  ", (*line_ptr)++);
-      continue;
-      }
-    fputc(c, stdout);
+  while ((c = fgetc(fp)) != EOF) {
+    ungetc(c, fp);
+    fgets(input, sizeof(input), fp);
+
+      if (flags->number_lines) {
+      printf("    %d  ", (*line_ptr)++);
+    }
+    fputs(input, stdout);
   }
+  
 }
 
 FILE * open_file(char *filepath) {
@@ -97,15 +101,20 @@ Options * init_options(void) {
   }
 
 // goes through the input and sets and flag in the CL args
-void parse_flags(char *argv[], int size, Options *flags) {
+// returns a count of number of flags set
+int parse_flags(char *argv[], int size, Options *flags) {
+  int flag_set = 0;
   for (int i = 1; i < size; i++) {
     if (argv[i][0] == '-') {
       if ((strcmp(argv[i], "-n") == 0) || ((strcmp(argv[i], "--number") == 0))) {
         flags->number_lines = true;
+        flag_set++;
       }
       if ((strcmp(argv[i], "-A") == 0) || ((strcmp(argv[i], "--show-all") == 0))) {
         flags->show_all = true;
+        flag_set++;
       }
     }
   }
+  return flag_set;
 }
