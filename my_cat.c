@@ -63,17 +63,20 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
     return;
   }
 
-  char input[4096];
+  // char input[4096];
   
   int c;
+  bool line_start = true;
   while ((c = fgetc(fp)) != EOF) {
-    ungetc(c, fp);
-    fgets(input, sizeof(input), fp);
 
-      if (flags->number_lines) {
+      if (line_start && flags->number_lines) {
       printf("    %d  ", (*line_ptr)++);
+      line_start = false;
     }
-    fputs(input, stdout);
+    if (c == '\n') {
+      line_start = true;
+    }
+    fputc(c, stdout);
   }
   
 }
