@@ -87,7 +87,7 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
       line_start = true;
     }
 
-    if (flags->show_ends) {
+    if (flags->show_ends && (c == 10 || c == 13)) {
       if (c == 10) {
         printf("$\n");
         continue;
@@ -101,7 +101,7 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
       continue;
     }
 
-    if (flags->show_nonprinting && !(c == 9 || c == 10)) {
+    if (flags->show_nonprinting && c < 32 && !(c == 9 || c == 10)) {
       printf("^%c", c+64);
       continue;
     }
