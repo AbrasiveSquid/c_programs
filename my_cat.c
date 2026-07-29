@@ -73,10 +73,16 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
   bool line_start = true;
   while ((c = fgetc(fp)) != EOF) {
 
-      if (line_start && flags->number_lines) {
-      printf("    %d  ", (*line_ptr)++);
-      line_start = false;
+    if (line_start){
+      if (flags->number_lines) {
+        printf("     %d\t", (*line_ptr)++);
+        line_start = false;
+      } else if (flags->number_nonblank_lines && c != '\n') {
+        printf("     %d\t",(*line_ptr)++);
+        line_start = false;
+      }
     }
+
     if (c == '\n') {
       line_start = true;
     }
@@ -186,6 +192,10 @@ int parse_flags(char *argv[], int size, Options *flags) {
         exit(EXIT_FAILURE);
       }
     }
+  }
+  // -b flag overrides -n
+  if (flags->number_nonblank_lines) {
+    flags->number_lines = false;
   }
   return flag_set;
 }
