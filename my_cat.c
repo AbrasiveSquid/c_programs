@@ -74,14 +74,24 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
   bool line_start = true;
   while ((c = fgetc(fp)) != EOF) {
 
-    if (flags->squeeze_blank && c == '\n') {
-      if (newline_count < 2) {
-        newline_count++;
-      } else {
-        while ((c = fgetc(fp)) == '\n') {
+    if (flags->squeeze_blank) {
+      if (c == '\n') {
+        if (newline_count < 2) {
+          newline_count++;
+        } else {
+          while ((c = fgetc(fp)) == '\n') {
+            continue;
+          }
+          ungetc(c, fp);
+          // if (c == -1) {
+          //   printf("\n");
+          //   break;
+          // }
+          newline_count = 0;
           continue;
         }
-        ungetc(c, fp);
+      }
+      else {
         newline_count = 0;
       }
     }
