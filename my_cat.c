@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
   // if no arguments or if only flags as arguments
   if (argc == 1 || (flag_set == (argc - 1))) {
     print_file(stdin, flags, line_ptr);
+    free(flags);
     return exit_status;
   }
 
@@ -58,6 +59,8 @@ int main(int argc, char *argv[]) {
     }
   }
   
+  free(flags);
+  fclose(stdout);
   return exit_status;
 }
 
@@ -83,11 +86,6 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
             continue;
           }
           ungetc(c, fp);
-          // if (c == -1) {
-          //   printf("\n");
-          //   break;
-          // }
-          newline_count = 0;
           continue;
         }
       }
@@ -165,7 +163,7 @@ Options * init_options(void) {
 int parse_flags(char *argv[], int size, Options *flags) {
   int flag_set = 0;
   for (int i = 1; i < size; i++) {
-    if (argv[i][0] == '-') {
+    if (argv[i][0] == '-' && (strlen(argv[i]) > 1)) {
       if ((strcmp(argv[i], "-n") == 0) || ((strcmp(argv[i], "--number") == 0))) {
         flags->number_lines = true;
         flag_set++;

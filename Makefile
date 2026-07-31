@@ -17,3 +17,8 @@ my_cat.o: my_cat.c
 
 clean:
 	rm -f $(TARGETS) *.o a.out 
+
+# mem leak test
+cat_leak:
+	$(CC) $(CFLAGS) -fsanitize=address my_cat.c -o my_cat
+	./my_cat ./cat_test_files/cat_test.txt -n
