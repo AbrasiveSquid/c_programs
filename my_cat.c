@@ -162,56 +162,77 @@ Options * init_options(void) {
 // returns a count of number of flags set
 int parse_flags(char *argv[], int size, Options *flags) {
   int flag_set = 0;
+  int j;
   for (int i = 1; i < size; i++) {
-    if (argv[i][0] == '-' && (strlen(argv[i]) > 1)) {
-      if ((strcmp(argv[i], "-n") == 0) || ((strcmp(argv[i], "--number") == 0))) {
-        flags->number_lines = true;
+    if (argv[i][0] != '-') {
+      continue;
+  } else if (argv[i][0] == '-' && (strlen(argv[i]) > 1) && argv[i][1] != '-') {
+      j = 1;
+      while (argv[i][j] != '\0') {
+        switch (argv[i][j]) {
+          case 'n':
+           flags->number_lines = true;
+            break;
+          case 'A':
+           flags->show_ends = true;
+           flags->show_tabs = true;
+           flags->show_nonprinting = true;
+           break;
+          case 'b':
+            flags->number_nonblank_lines = true;
+            break;
+          case 'e':
+            flags->show_ends = true;
+            flags->show_nonprinting = true;
+            break;
+          case 'E':
+            flags->show_ends = true;
+            break;
+          case 's':
+            flags->squeeze_blank = true;
+            break;
+          case 't':
+            flags->show_nonprinting = true;
+            flags->show_tabs = true;
+            break;
+          case 'T':
+            flags->show_tabs = true;
+            break;
+          case 'v':
+            flags->show_nonprinting = true;
+            break;
+          default:
+            fprintf(stderr, "my_cat: invalid option -- '%c'\n", argv[i][1]);
+            fprintf(stderr, "Try my_cat --help for more information.\n");
+            exit(EXIT_FAILURE);
+        }
+        j++;
+      }
+      flag_set++;
+    }  else {
+  
+        if (strcmp(argv[i], "--number") == 0) {
+            flags->number_lines = true;
+        } else if (strcmp(argv[i],"--show-all") == 0)  {
+            flags->show_ends = true;
+            flags->show_tabs = true;
+            flags->show_nonprinting = true;
+        } else if (strcmp(argv[i], "--number-nonblank") == 0) {
+            flags->number_nonblank_lines = true;
+        } else if (strcmp(argv[i], "--show-ends") == 0) {
+            flags->show_ends = true;
+        } else if (strcmp(argv[i], "--squeeze-blank") == 0) {
+            flags->squeeze_blank = true;
+        } else if (strcmp(argv[i], "--show-tabs") == 0) {
+            flags->show_tabs = true;
+        } else if (strcmp(argv[i], "--show-nonprinting") == 0) {
+            flags->show_nonprinting = true;
+        } else {
+            fprintf(stderr, "my_cat: invalid option -- '%c'\n", argv[i][1]);
+            fprintf(stderr, "Try my_cat --help for more information.\n");
+            exit(EXIT_FAILURE);
+        }
         flag_set++;
-      }
-      else if ((strcmp(argv[i], "-A") == 0) || ((strcmp(argv[i], "--show-all") == 0))) {
-        flags->show_ends = true;
-        flags->show_tabs = true;
-        flags->show_nonprinting = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-b") == 0) || ((strcmp(argv[i], "--number-nonblank") == 0))) {
-        flags->number_nonblank_lines = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-e") == 0))  {
-        flags->show_ends = true;
-        flags->show_nonprinting = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-E") == 0) || ((strcmp(argv[i], "--show-ends") == 0))) {
-        flags->show_ends = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-s") == 0) || ((strcmp(argv[i], "--squeeze-blank") == 0))) {
-        flags->squeeze_blank = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-t") == 0)) {
-        flags->show_tabs = true;
-        flags->show_nonprinting = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-T") == 0) || ((strcmp(argv[i], "--show-tabs") == 0))) {
-        flags->show_tabs = true;
-        flag_set++;
-      }
-      else if ((strcmp(argv[i], "-u") == 0)) {
-        flag_set++; // this flag is ignored and only kept to not trigger perror
-      }
-      else if ((strcmp(argv[i], "-v") == 0) || ((strcmp(argv[i], "--show-nonprinting") == 0))) {
-        flags->show_nonprinting = true;
-        flag_set++;
-      }
-      else {
-        fprintf(stderr, "my_cat: invalid option -- '%c'\n", argv[i][1]);
-        fprintf(stderr, "Try my_cat --help for more information.\n");
-        exit(EXIT_FAILURE);
-      }
     }
   }
   // -b flag overrides -n

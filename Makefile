@@ -61,8 +61,8 @@ cat_number_and_blank: my_cat
 cat_no_eof: my_cat
 	./my_cat -vet ./cat_test_files/no_eof.txt > my_out
 	cat -vet ./cat_test_files/no_eof.txt > sys_out
-	diff my_outa my_outb 
-	rm -f my_outa my_outb
+	diff my_out sys_out 
+	rm -f my_out sys_out
 
 cat_escape_char: my_cat
 	./my_cat -vet ./cat_test_files/cat_test.txt > my_out
@@ -72,7 +72,7 @@ cat_escape_char: my_cat
 
 cat_squeeze_test: my_cat
 	./my_cat -s ./cat_test_files/squeeze.txt > my_out
-	cat -vet ./cat_test_files/squeeze.txt > sys_out
+	cat -s ./cat_test_files/squeeze.txt > sys_out
 	diff my_out sys_out
 	rm -f my_out sys_out
 
