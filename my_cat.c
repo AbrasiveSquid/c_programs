@@ -18,7 +18,8 @@ void print_file(FILE *fp, Options * flag, int * line_ptr);
 FILE * open_file(char *filepath);
 Options * init_options(void);
 int parse_flags(char *argv[], int size, Options *flags); 
-
+void print_help(char * program_name); 
+void print_version(char * program_name);
 
 int main(int argc, char *argv[]) {
   int exit_status = 0;
@@ -210,8 +211,12 @@ int parse_flags(char *argv[], int size, Options *flags) {
       }
       flag_set++;
     }  else {
-  
-        if (strcmp(argv[i], "--number") == 0) {
+        
+        if (strcmp(argv[i], "--help") == 0) {
+          print_help(argv[0]);
+        } else if (strcmp(argv[i], "--version") == 0) {
+          print_version(argv[0]);
+        } else if (strcmp(argv[i], "--number") == 0) {
             flags->number_lines = true;
         } else if (strcmp(argv[i],"--show-all") == 0)  {
             flags->show_ends = true;
@@ -242,3 +247,37 @@ int parse_flags(char *argv[], int size, Options *flags) {
   return flag_set;
 }
 
+void print_help(char * program_name) {
+  printf("Usage: %s [OPTION]... [FILE]...\n", program_name);
+  printf("Concatenate File(s) to standard output.\n");
+  printf("\nWith no FILE, or when FILE is -, read standard input.\n");
+  printf("\n   %-25sequivalent to -vET\n","-A, --show-all");
+  printf("   %-25snumber nonempty output lines, overrides -n\n", "-b, --number-nonblank");
+  printf("   %-25sequivalent to -vE\n", "-e");
+  printf("   %-25sdisplay $ at end of each line\n", "-E, --show-ends");
+  printf("   %-25snumber all output lines\n", "-n, --number");
+  printf("   %-25ssuppress repeated empty output lines\n", "-s, --squeeze-blank");
+  printf("   %-25sequivalent to -vT\n", "-t");
+  printf("   %-25sdisplay TAB characters as ^I\n", "-T, --show-tabs");
+  printf("   %-25s(ignored)\n", "-u");
+  printf("   %-25suse ^ and M- notation, except for LFD and TAB\n", "-v, --show-nonprinting");
+  printf("\t    %-14sdisplay this help and exit\n", "--help");
+  printf("\t    %-14soutput version information and exit\n", "--version");
+
+  printf("\nExamples:\n");
+  printf("   %s %-3s Output f's contents, then standard input, then g's contents.\n", program_name, "f - g");
+  printf("   %-11s Copy standard input to standard output.\n", program_name);
+
+  printf("\nThis is a copy of cat, a GNU coreutils program. It was made to practice programming in C.\n");
+
+  exit(EXIT_SUCCESS);
+}
+
+void print_version(char * program_name) {
+  printf("%s (clone of GNU coreutils) 9.4", program_name);
+  printf("\nNo claim of any copyright or license\n");
+  printf("There is NO WARRANTY, to the extent permitted by law.\n");
+  printf("\nWritten by Abrasive Squid\n");
+
+  exit(EXIT_SUCCESS);
+}
