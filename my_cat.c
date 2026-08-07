@@ -14,30 +14,31 @@ typedef struct {
   bool show_nonprinting;
 } Options;
 
-void print_file(FILE *fp, Options * flag, int * line_ptr);
+void print_file(FILE *fp, Options * flag, int * line_number);
 FILE * open_file(char *filepath);
-Options * init_options(void);
 int parse_flags(char *argv[], int size, Options *flags); 
 void print_help(char * program_name); 
 void print_version(char * program_name);
 
 int main(int argc, char *argv[]) {
   int exit_status = 0;
-  int line = 1; 
-  int * line_ptr = &line;
-  int flag_set;
-  bool prev_stdin = false;
+  int line_number = 1;
+  int flag_set = 0;
+  Options flags;
   
-  Options * flags = init_options();
-  if (flags == NULL) {
-    return 1;
-  }
-  flag_set = parse_flags(argv, argc, flags);
+  // initialize flags to false
+  flags.number_lines = false;
+  flags.number_nonblank_lines = false;
+  flags.show_ends = false;
+  flags.squeeze_blank = false;
+  flags.show_tabs = false;
+  flags.show_nonprinting = false;
+
+  flag_set = parse_flags(argv, argc, &flags);
   
   // if no arguments or if only flags as arguments
   if (argc == 1 || (flag_set == (argc - 1))) {
-    print_file(stdin, flags, line_ptr);
-    free(flags);
+    print_file(stdin, &flags, &line_number);
     return exit_status;
   }
 
@@ -46,13 +47,7 @@ int main(int argc, char *argv[]) {
   for (int i = 1; i < argc; i++) {
     // if argument is "-" takes input from stdin until EOF (ctrl+D) then continues  to next argument
     if (strcmp("-", argv[i]) == 0) {
-      if (!prev_stdin) {
-        prev_stdin = true;
-      }
-      else {
-        clearerr(stdin);
-      }
-      print_file(stdin, flags, line_ptr); 
+      print_file(stdin, &flags, &line_number); 
     } else if (argv[i][0] == '-') {
         continue;
     }
@@ -62,26 +57,24 @@ int main(int argc, char *argv[]) {
         exit_status = 1;
         continue;
       }
-      print_file(fp, flags, line_ptr); 
+      print_file(fp, &flags, &line_number); 
       fclose(fp);
     }
   }
   
-  free(flags);
   fclose(stdout);
   return exit_status;
 }
 
 // displays the contents of fp to stdout
-void print_file(FILE *fp, Options * flags, int * line_ptr) {
+void print_file(FILE *fp, Options * flags, int * line_number) {
   if (fp == NULL) {
     return;
   }
 
-  int c = 0;
+  int c;
   int newline_count = 0;
   bool line_start = true;
-
   while ((c = fgetc(fp)) != EOF) {
 
     if (flags->squeeze_blank) {
@@ -102,10 +95,10 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
     }
     if (line_start){
       if (flags->number_lines) {
-        printf("     %d\t", (*line_ptr)++);
+        printf("     %d\t", (*line_number)++);
         line_start = false;
       } else if (flags->number_nonblank_lines && c != '\n') {
-        printf("     %d\t",(*line_ptr)++);
+        printf("     %d\t",(*line_number)++);
         line_start = false;
       }
     }
@@ -147,32 +140,15 @@ FILE * open_file(char *filepath) {
   return fp;
 }
 
-// Sets all flags to 0
-Options * init_options(void) {
-  Options * flags = malloc(sizeof(Options));
-  if (flags == NULL) {
-    perror("Initialize Options Error");
-    return NULL;
-  }
-
-  flags->number_lines = false;
-  // flags->show_all = false;
-  flags->number_nonblank_lines = false;
-  flags->show_ends = false;
-  flags -> squeeze_blank = false;
-  flags-> show_tabs = false;
-  flags ->show_nonprinting = false;
-  return flags;
-  }
-
 // goes through the input and sets and flag in the CL args
 // returns a count of number of flags set
 int parse_flags(char *argv[], int size, Options *flags) {
   int flag_set = 0;
   int j;
   for (int i = 1; i < size; i++) {
-    if (strcmp(argv[i],"-") == 0) {
-      continue; // ignore - because not a flag, means stdin
+    if (strcmp(argv[i],"-") == 0 || argv[i][0] != '-') {
+      // if '-' char means stdin, otherwise if doesn't start with -, then not a flag also ignore
+      continue; 
   } else if (argv[i][0] == '-' && (strlen(argv[i]) > 1) && argv[i][1] != '-') {
       j = 1;
       while (argv[i][j] != '\0') {
