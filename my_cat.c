@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
   int line = 1; 
   int * line_ptr = &line;
   int flag_set;
+  bool prev_stdin = false;
   
   Options * flags = init_options();
   if (flags == NULL) {
@@ -45,6 +46,12 @@ int main(int argc, char *argv[]) {
   for (int i = 1; i < argc; i++) {
     // if argument is "-" takes input from stdin until EOF (ctrl+D) then continues  to next argument
     if (strcmp("-", argv[i]) == 0) {
+      if (!prev_stdin) {
+        prev_stdin = true;
+      }
+      else {
+        clearerr(stdin);
+      }
       print_file(stdin, flags, line_ptr); 
     } else if (argv[i][0] == '-') {
         continue;
@@ -71,11 +78,10 @@ void print_file(FILE *fp, Options * flags, int * line_ptr) {
     return;
   }
 
-  // char input[4096];
-  
-  int c;
+  int c = 0;
   int newline_count = 0;
   bool line_start = true;
+
   while ((c = fgetc(fp)) != EOF) {
 
     if (flags->squeeze_blank) {
