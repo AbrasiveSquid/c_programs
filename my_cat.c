@@ -165,8 +165,8 @@ int parse_flags(char *argv[], int size, Options *flags) {
   int flag_set = 0;
   int j;
   for (int i = 1; i < size; i++) {
-    if (argv[i][0] != '-') {
-      continue;
+    if (strcmp(argv[i],"-") == 0) {
+      continue; // ignore - because not a flag, means stdin
   } else if (argv[i][0] == '-' && (strlen(argv[i]) > 1) && argv[i][1] != '-') {
       j = 1;
       while (argv[i][j] != '\0') {
