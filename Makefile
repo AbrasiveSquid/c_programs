@@ -1,6 +1,6 @@
 # variables
 CC = gcc
-CFLAGS = -Wall -g -std=c99
+CFLAGS = -g -Wall -Wextra -std=c99 -fsanitize=address,undefined
 TARGETS = my_cat 
 OBJECTS = my_cat.o
 
